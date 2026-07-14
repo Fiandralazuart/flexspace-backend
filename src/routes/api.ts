@@ -4,6 +4,7 @@ import authMiddleware from "../middleware/auth.middleware"
 import userController from "../controller/user.controller"
 import buildingController from "../controller/building.controller"
 import spaceController from "../controller/space.controller"
+import regionController from "../controller/region.controller"
 
 
 const router = express.Router()
@@ -36,5 +37,16 @@ router.route("/space/:id")
 .get(authMiddleware, spaceController.findOne)
 .put(authMiddleware, spaceController.update)
 .delete(authMiddleware, spaceController.delete)
+
+router.route("/region/provinces")
+.get(authMiddleware, regionController.getProvinces);
+router.route("/region/regencies/:provinceId")
+.get(authMiddleware, regionController.getRegencies);
+router.route("/region/districts/:regencyId")
+.get(authMiddleware, regionController.getDistricts);
+router.route("/region/villages/:districtId")
+.get(authMiddleware, regionController.getVillages);
+router.route("/region/city")
+.get(authMiddleware, regionController.findByCity);
 
 export default router
