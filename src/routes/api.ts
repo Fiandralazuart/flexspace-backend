@@ -11,6 +11,7 @@ const router = express.Router()
 router.post("/auth/login", authController.login)
 router.post("/auth/activation/:token", authController.activation)
 
+router.post("/register",  userController.createGeneralUser)
 router.route("/user")
 .get(authMiddleware, userController.findUser)
 .post(authMiddleware, userController.createUser)

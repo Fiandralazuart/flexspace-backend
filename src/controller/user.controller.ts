@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { IReqUser } from "../utils/interface";
 import {
+	createGeneralUserDTO,
+	createGeneralUserSchema,
 	createUserDTO,
 	createUserSchema,
 	updateUserDTO,
@@ -10,6 +12,7 @@ import { PrismaClient, Prisma } from "../../generated/prisma";
 import response from "../utils/response";
 import { encrypt } from "../utils/encription";
 import { sendActivationEmail } from "../services/mail.service";
+import cuid from "cuid";
 
 const prisma = new PrismaClient();
 
@@ -164,6 +167,40 @@ export default {
 		} catch (error) {
 			const err = error as unknown as Error;
 			response.error(res, err, "Failed to Delete User");
+		}
+	},
+	async createGeneralUser(req: IReqUser, res: Response) {
+		try {
+			const { name, email, phone, password, confirmPassword } =
+				req.body;
+
+			const data: createGeneralUserDTO = createGeneralUserSchema.parse({
+				name,
+				email,
+				phone,
+				password,
+				confirmPassword,
+			});
+
+			const id = cuid();
+			const result = await prisma.user.create({
+				data: {
+					id,
+					name: data.name,
+					email: data.email,
+					roleId: 4,
+					phone: data.phone ?? null,
+					password: await encrypt(data.password),
+					createdBy: id,
+				},
+			});
+
+			await sendActivationEmail(result);
+
+			response.success(res, result, "Success Create General User");
+		} catch (error) {
+			const err = error as unknown as Error;
+			response.error(res, err, "Failed Create User");
 		}
 	},
 };

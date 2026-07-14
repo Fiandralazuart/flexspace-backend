@@ -12,15 +12,15 @@ export const createSpaceSchema = z.object({
 
   description: z.string().trim(),
 
-  floor: z.number().int().min(0),
+  floor: z.number().int().min(0).optional(),
 
   capacity: z.number().int().positive(),
 
-  picture: z.string().url(),
+  picture: z.string(),
 
   pictureId: z.string(),
 
-  status: z.nativeEnum(SpaceStatus),
+  status: z.nativeEnum(SpaceStatus).optional(),
 });
 
 export const updateSpaceSchema = z.object({
