@@ -1,0 +1,157 @@
+import { Response } from "express";
+import { IReqUser } from "../utils/interface";
+import response from "../utils/response";
+import { PrismaClient, Prisma } from "../../generated/prisma";
+import {
+	BuildingSchema,
+	CreateBuildingDTO,
+	UpdateBuildingDTO,
+} from "../validations/building.validation";
+
+const prisma = new PrismaClient();
+
+export default {
+	async create(req: IReqUser, res: Response) {
+		try {
+			const data: CreateBuildingDTO = BuildingSchema.parse(req.body);
+
+			const result = await prisma.building.create({
+				data: {
+					name: data.name,
+					location: data.location,
+					creator: {
+						connect: {
+							id: req.user!.id,
+						},
+					},
+				},
+			});
+
+			response.success(res, result, "Success Create Building");
+		} catch (error) {
+			const err = error as Error;
+			response.error(res, err, "Failed to create building");
+		}
+	},
+	async findAll(req: IReqUser, res: Response) {
+		try {
+			const result = await prisma.building.findMany({
+				include: {
+					creator: {
+						select: {
+							name: true,
+							email: true,
+						},
+					},
+				},
+			});
+
+			if (result.length == 0) {
+				return response.notFound(res, "No Data Found");
+			}
+
+			response.success(res, result, "Success Get All Building");
+		} catch (error) {
+			const err = error as Error;
+			response.error(res, err, "Failed to find all building");
+		}
+	},
+	async findOne(req: IReqUser, res: Response) {
+		try {
+			const { id } = req.params;
+
+			if (!id || Array.isArray(id))
+				return response.notFound(res, "User is not found");
+
+			const result = await prisma.building.findUnique({
+				where: {
+					id,
+				},
+				include: {
+					creator: {
+						select: {
+							name: true,
+							email: true,
+						},
+					},
+				},
+			});
+
+			if (!result) return response.notFound(res, "Data Not Found");
+
+			response.success(res, result, "Success Get one Data");
+		} catch (error) {
+			const err = error as Error;
+			response.error(res, err, "Failed to find one building");
+		}
+	},
+	async update(req: IReqUser, res: Response) {
+		try {
+			const { id } = req.params;
+			const data: UpdateBuildingDTO = BuildingSchema.parse(req.body);
+
+			if (!id || Array.isArray(id))
+				return response.notFound(res, "User is not found");
+
+			const updateData: Prisma.BuildingUpdateInput = {};
+
+			if (data.name !== undefined) {
+				updateData.name = data.name;
+			}
+
+			if (data.location !== undefined) {
+				updateData.location = data.location;
+			}
+
+			updateData.updater = {
+				connect: {
+					id: req.user!.id,
+				},
+			};
+
+			const result = await prisma.building.update({
+				where: {
+					id,
+				},
+				data: updateData,
+				include: {
+					creator: {
+						select: {
+							name: true,
+							email: true,
+						},
+					},
+					updater: {
+						select: {
+							name: true,
+							email: true,
+						},
+					},
+				},
+			});
+
+			response.success(res, result, "Success Update Building");
+		} catch (error) {
+			const err = error as Error;
+			response.error(res, err, "Failed to update building");
+		}
+	},
+	async delete(req: IReqUser, res: Response) {
+		try {
+			const { id } = req.params;
+
+			if (!id || Array.isArray(id))
+				return response.notFound(res, "User is not found");
+
+			const result = await prisma.building.delete({
+				where: {
+					id,
+				},
+			});
+			response.success(res, result, "Success Delete User");
+		} catch (error) {
+			const err = error as Error;
+			response.error(res, err, "Failed to delete building");
+		}
+	},
+};

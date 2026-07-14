@@ -1,0 +1,45 @@
+model role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  roleId        Int
+  role          role      @relation(fields: [roleId], references: [id])
+  name          String
+  email         String    @unique
+  password      String
+  phone         String?   @unique
+  photo         String?
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+	createdBy String?
+  updatedBy String?
+
+  creator User? @relation("UserCreatedBy", fields: [createdBy], references: [id])
+  updater User? @relation("UserUpdatedBy", fields: [updatedBy], references: [id])
+
+  createdUsers User[] @relation("UserCreatedBy")
+  updatedUsers User[] @relation("UserUpdatedBy")
+
+  createdBuildings Building[] @relation("BuildingCreatedBy")
+  updatedBuildings Building[] @relation("BuildingUpdatedBy")
+
+  createdSpaces Space[] @relation("SpaceCreatedBy")
+  updatedSpaces Space[] @relation("SpaceUpdatedBy")
+
+  @@index([roleId])
+  @@map("users")
+}

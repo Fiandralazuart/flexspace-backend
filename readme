@@ -1,0 +1,10 @@
+run migrate all table
+npx prisma migrate dev --name init
+
+run migrate one table
+npx prisma migrate dev --name add_tableName
+
+
+notes
+- activation api 
+- delete controller done

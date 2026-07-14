@@ -1,0 +1,48 @@
+model Building {
+  id        String   @id @default(cuid())
+  name      String
+  location  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy String
+  updatedBy String?
+
+  creator User  @relation("BuildingCreatedBy", fields: [createdBy], references: [id])
+  updater User? @relation("BuildingUpdatedBy", fields: [updatedBy], references: [id])
+
+  spaces Space[]
+}
+
+enum SpaceStatus {
+  AVAILABLE
+  IN_USE
+  POTENTIAL_AVAILABLE
+  NON_SCHEDULED_USE
+}
+
+model Space {
+  id          String      @id @default(cuid())
+  buildingId  String
+  building    Building    @relation(fields: [buildingId], references: [id])
+  name        String
+  description String
+  floor       Int?
+  capacity    Int
+  code        String?     @unique
+  picture     String
+  pictureId   String
+  status      SpaceStatus @default(AVAILABLE)
+
+  assets   Assets[]
+  facility Facility[]
+
+  createdBy String
+  updatedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator User  @relation("SpaceCreatedBy", fields: [createdBy], references: [id])
+  updater User? @relation("SpaceUpdatedBy", fields: [updatedBy], references: [id])
+}
