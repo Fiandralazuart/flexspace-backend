@@ -1,4 +1,6 @@
 import { z } from "zod"
+import { extend } from "zod/mini";
+import { User } from "../../generated/prisma";
 
 export const createUserSchema = z
   .object({
@@ -71,6 +73,8 @@ export const createGeneralUserSchema = z
   phone: z.string().min(10).max(15).optional(),
   roleId: z.number().int().optional(),
 });
+
+export type UserMail = Omit<User, "password">;
 
 export type createUserDTO = z.infer<typeof createUserSchema>
 export type createGeneralUserDTO = z.infer<typeof createGeneralUserSchema>

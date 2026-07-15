@@ -13,23 +13,16 @@ import response from "../utils/response";
 import { encrypt } from "../utils/encription";
 import { sendActivationEmail } from "../services/mail.service";
 import cuid from "cuid";
+import { USER_OMIT } from "../utils/constant";
 
 const prisma = new PrismaClient();
 
 export default {
 	async createUser(req: IReqUser, res: Response) {
 		try {
-			const { name, email, roleId, phone, password, confirmPassword } =
-				req.body;
+			const io = req.app.get("io")
 
-			const data: createUserDTO = createUserSchema.parse({
-				name,
-				email,
-				roleId,
-				phone,
-				password,
-				confirmPassword,
-			});
+			const data: createUserDTO = createUserSchema.parse(req.body);
 
 			const result = await prisma.user.create({
 				data: {
@@ -40,9 +33,12 @@ export default {
 					password: await encrypt(data.password),
 					createdBy: req.user!.id,
 				},
+				omit: USER_OMIT
 			});
 
 			await sendActivationEmail(result);
+
+			io.emit("userCreated", result)
 
 			response.success(res, result, "Success Create User");
 		} catch (error) {
@@ -61,6 +57,7 @@ export default {
 						},
 					},
 				},
+				omit: USER_OMIT
 			});
 
 			if (result.length == 0) {
@@ -92,6 +89,7 @@ export default {
 						},
 					},
 				},
+				omit: USER_OMIT
 			});
 
 			if (!result) return response.notFound(res, "Data Not Found");
@@ -104,6 +102,7 @@ export default {
 	},
 	async updateUser(req: IReqUser, res: Response) {
 		try {
+			const io = req.app.get("io")
 			const { id } = req.params;
 			const { name, phone, roleId } = req.body;
 
@@ -143,7 +142,15 @@ export default {
 			const result = await prisma.user.update({
 				where: { id },
 				data: updateData,
+				omit: USER_OMIT
 			});
+
+			io.emit("userUpdated", {
+				id: result.id,
+				name: result.name,
+				phone: result.phone,
+				roleId: result.roleId
+			})
 
 			response.success(res, result, "Success Update User");
 		} catch (error) {
@@ -154,6 +161,7 @@ export default {
 	async delete(req: IReqUser, res: Response) {
 		try {
 			const { id } = req.params;
+			const io = req.app.get("io")
 
 			if (!id || Array.isArray(id))
 				return response.notFound(res, "User is not found");
@@ -162,7 +170,12 @@ export default {
 				where: {
 					id,
 				},
+				omit: USER_OMIT
 			});
+
+			io.emit("userDeleted", {
+				id: result.id
+			})
 			response.success(res, result, "Success Delete User");
 		} catch (error) {
 			const err = error as unknown as Error;
@@ -171,16 +184,8 @@ export default {
 	},
 	async createGeneralUser(req: IReqUser, res: Response) {
 		try {
-			const { name, email, phone, password, confirmPassword } =
-				req.body;
-
-			const data: createGeneralUserDTO = createGeneralUserSchema.parse({
-				name,
-				email,
-				phone,
-				password,
-				confirmPassword,
-			});
+			const io = req.app.get("io")
+			const data: createGeneralUserDTO = createGeneralUserSchema.parse(req.body);
 
 			const id = cuid();
 			const result = await prisma.user.create({
@@ -193,9 +198,12 @@ export default {
 					password: await encrypt(data.password),
 					createdBy: id,
 				},
+				omit: USER_OMIT
 			});
 
 			await sendActivationEmail(result);
+
+			io.emit("generalUserCreated", result)
 
 			response.success(res, result, "Success Create General User");
 		} catch (error) {
