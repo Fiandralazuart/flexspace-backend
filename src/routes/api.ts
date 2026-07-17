@@ -5,6 +5,8 @@ import userController from "../controller/user.controller"
 import buildingController from "../controller/building.controller"
 import spaceController from "../controller/space.controller"
 import regionController from "../controller/region.controller"
+import mediaMiddleware from "../middleware/media.middleware"
+import mediaController from "../controller/media.controller"
 
 
 const router = express.Router()
@@ -48,5 +50,10 @@ router.route("/region/villages/:districtId")
 .get(authMiddleware, regionController.getVillages);
 router.route("/region/city")
 .get(authMiddleware, regionController.findByCity);
+
+
+router.post("/media/upload-single", [authMiddleware, mediaMiddleware.single("file")], mediaController.single)
+router.post("/media/upload-multiple", [authMiddleware, mediaMiddleware.single("files")], mediaController.multiple)
+router.delete("/media/remove", authMiddleware, mediaController.remove)
 
 export default router

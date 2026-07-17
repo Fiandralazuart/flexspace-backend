@@ -12,6 +12,7 @@ const prisma = new PrismaClient();
 export default {
 	async create(req: IReqUser, res: Response) {
 		try {
+			const io = req.app.get("io")
 			const data = createSpaceSchema.parse(req.body);
 
 			const result = await prisma.space.create({
@@ -40,6 +41,7 @@ export default {
 				},
 			});
 
+			io.emit("spaceCreated", result)
 			response.success(res, result, "Success create space");
 		} catch (error) {
 			const err = error as Error;
@@ -56,6 +58,12 @@ export default {
 							email: true,
 						},
 					},
+					building: {
+						select: {
+							id: true,
+							name: true,
+						}
+					}
 				},
 			});
 
@@ -85,6 +93,12 @@ export default {
 							email: true,
 						},
 					},
+					building: {
+						select: {
+							id: true,
+							name: true,
+						}
+					}
 				},
 			});
 
@@ -96,6 +110,7 @@ export default {
 	},
 	async update(req: IReqUser, res: Response) {
 		try {
+			const io = req.app.get("io")
 			const { id } = req.params;
 			const data = updateSpaceSchema.parse(req.body);
 
@@ -152,6 +167,7 @@ export default {
 				data: updateData,
 			});
 
+			io.emit("spaceUpdated", result)
 			response.success(res, result, "Success update space");
 		} catch (error) {
 			const err = error as Error;
@@ -160,6 +176,7 @@ export default {
 	},
 	async delete(req: IReqUser, res: Response) {
 		try {
+			const io = req.app.get("io")
 			const { id } = req.params;
 
 			if (!id || Array.isArray(id)) return response.notFound(res, "Invalid ID");
@@ -170,6 +187,9 @@ export default {
 				},
 			});
 
+			io.emit("spaceDeleted", {
+				id: result.id
+			})
 			response.success(res, result, "Success delete space");
 		} catch (error) {
 			const err = error as Error;
