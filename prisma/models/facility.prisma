@@ -26,12 +26,60 @@ model Assets {
 }
 
 model Facility {
-  id        String @id @default(cuid())
-  spaceId   String
-  space     Space  @relation(fields: [spaceId], references: [id])
-  name      String
-  status    String
+  id       String @id @default(cuid())
+  name     String
+  type     FacilityType
+  channel  Int
+  status   FacilityStatus @default(OFF)
+  value    Int?
+
+  deviceId String
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  createdBy String
+  updatedBy String?
+
+  creator User  @relation("FacilityCreatedBy", fields: [createdBy], references: [id])
+  updater User? @relation("FacilityUpdatedBy", fields: [updatedBy], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("facilities")
+}
+
+enum FacilityType {
+  LIGHT
+  AIR_CONDITIONER
+}
+
+enum FacilityStatus {
+  ON
+  OFF
+}
+
+model Device {
+  id           String @id @default(cuid())
+  name         String
+  serialNumber String @unique
+  status       DeviceStatus @default(OFFLINE)
+  spaceId      String @unique
+  space        Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  facilities   Facility[]
+
+  createdBy String
+  updatedBy String?
+
+  creator User  @relation("DeviceCreatedBy", fields: [createdBy], references: [id])
+  updater User? @relation("DeviceUpdatedBy", fields: [updatedBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("devices")
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
 }

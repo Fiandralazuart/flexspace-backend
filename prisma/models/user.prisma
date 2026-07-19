@@ -40,6 +40,12 @@ model User {
   createdSpaces Space[] @relation("SpaceCreatedBy")
   updatedSpaces Space[] @relation("SpaceUpdatedBy")
 
+  devicesCreated Device[] @relation("DeviceCreatedBy")
+	devicesUpdated Device[] @relation("DeviceUpdatedBy")
+
+	facilitiesCreated Facility[] @relation("FacilityCreatedBy")
+	facilitiesUpdated Facility[] @relation("FacilityUpdatedBy")
+
   @@index([roleId])
   @@map("users")
 }

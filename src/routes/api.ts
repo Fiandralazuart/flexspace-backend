@@ -10,6 +10,7 @@ import mediaController from "../controller/media.controller";
 import facilityController from "../controller/facility.controller";
 import occupancyController from "../controller/occupancy.controller";
 import iotMiddleware from "../middleware/occupancy.middleware";
+import deviceController from "../controller/device.controller";
 
 const router = express.Router();
 
@@ -71,6 +72,17 @@ router
   .get(authMiddleware, facilityController.findOne)
   .put(authMiddleware, facilityController.update)
   .delete(authMiddleware, facilityController.delete);
+
+router
+	.route("/device")
+	.get(authMiddleware, deviceController.findAll)
+	.post(authMiddleware, deviceController.create);
+
+router
+	.route("/device/:id")
+	.get(authMiddleware, deviceController.findOne)
+	.put(authMiddleware, deviceController.update)
+	.delete(authMiddleware, deviceController.delete);
 
 router
   .route("/occupancy")

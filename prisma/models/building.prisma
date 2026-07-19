@@ -62,8 +62,8 @@ model Space {
   lastDetectedAt   DateTime?
 
   assets        Assets[]
-  facility      Facility[]
   occupancyLogs OccupancyLog[]
+  devices Device?
 
   createdBy String
   updatedBy String?

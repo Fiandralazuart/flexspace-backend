@@ -3,165 +3,229 @@ import { Prisma, PrismaClient } from "../../generated/prisma";
 import { IReqUser } from "../utils/interface";
 import response from "../utils/response";
 import {
-	createFacilitySchema,
-	updateFacilitySchema,
+  createFacilitySchema,
+  updateFacilitySchema,
 } from "../validations/facility.validation";
 
 const prisma = new PrismaClient();
 
 export default {
-	async create(req: IReqUser, res: Response) {
-		try {
-			const io = req.app.get("io");
-			const data = createFacilitySchema.parse(req.body);
+  async create(req: IReqUser, res: Response) {
+    try {
+      const io = req.app.get("io");
+      const data = createFacilitySchema.parse(req.body);
 
-			const result = await prisma.facility.create({
-				data: {
-					name: data.name,
-					status: data.status,
-					space: {
-						connect: {
-							id: data.spaceId,
-						},
-					},
-				},
-				include: {
-					space: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-				},
-			});
+      const result = await prisma.facility.create({
+        data: {
+          name: data.name,
+          type: data.type,
+          status: data.status,
+		  channel: data.channel,
 
-			io.emit("facilityCreated", result);
-			response.success(res, result, "Success create facility");
-		} catch (error) {
-			const err = error as Error;
-			response.error(res, err, "Failed to create facility");
-		}
-	},
+          ...(data.value !== undefined && {
+            value: data.value,
+          }),
 
-	async findAll(req: IReqUser, res: Response) {
-		try {
-			const result = await prisma.facility.findMany({
-				include: {
-					space: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-				},
-			});
+          device: {
+            connect: {
+              id: data.deviceId,
+            },
+          },
 
-			if (result.length === 0)
-				return response.notFound(res, "Database are empty");
+          creator: {
+            connect: {
+              id: req.user!.id,
+            },
+          },
+        },
+        include: {
+          device: {
+            select: {
+              id: true,
+              name: true,
+              serialNumber: true,
+              space: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-			response.success(res, result, "Success find all data");
-		} catch (error) {
-			const err = error as Error;
-			response.error(res, err, "Failed");
-		}
-	},
+      io.emit("facilityCreated", result);
 
-	async findOne(req: IReqUser, res: Response) {
-		try {
-			const { id } = req.params;
+      response.success(res, result, "Success create facility");
+    } catch (error) {
+      const err = error as Error;
+      response.error(res, err, "Failed to create facility");
+    }
+  },
 
-			if (!id || Array.isArray(id))
-				return response.notFound(res, "Invalid ID");
+  async findAll(req: IReqUser, res: Response) {
+    try {
+      const result = await prisma.facility.findMany({
+        include: {
+          device: {
+            select: {
+              id: true,
+              name: true,
+              serialNumber: true,
+              space: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-			const result = await prisma.facility.findUnique({
-				where: {
-					id,
-				},
-				include: {
-					space: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-				},
-			});
+      if (result.length === 0)
+        return response.notFound(res, "Database is empty");
 
-			if (!result)
-				return response.notFound(res, "Facility not found");
+      response.success(res, result, "Success find all data");
+    } catch (error) {
+      const err = error as Error;
+      response.error(res, err, "Failed");
+    }
+  },
 
-			response.success(res, result, "Success find one data");
-		} catch (error) {
-			const err = error as Error;
-			response.error(res, err, "Failed");
-		}
-	},
+  async findOne(req: IReqUser, res: Response) {
+    try {
+      const { id } = req.params;
 
-	async update(req: IReqUser, res: Response) {
-		try {
-			const io = req.app.get("io");
-			const { id } = req.params;
+      if (!id || Array.isArray(id))
+        return response.notFound(res, "User is not found");
 
-			if (!id || Array.isArray(id))
-				return response.notFound(res, "Invalid ID");
+      const result = await prisma.facility.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          device: {
+            select: {
+              id: true,
+              name: true,
+              serialNumber: true,
+              space: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-			const data = updateFacilitySchema.parse(req.body);
+      if (!result) return response.notFound(res, "Facility not found");
 
-			const updateData: Prisma.FacilityUpdateInput = {};
+      response.success(res, result, "Success find one data");
+    } catch (error) {
+      const err = error as Error;
+      response.error(res, err, "Failed");
+    }
+  },
 
-			if (data.name !== undefined) {
-				updateData.name = data.name;
-			}
+  async update(req: IReqUser, res: Response) {
+    try {
+      const io = req.app.get("io");
+      const { id } = req.params;
 
-			if (data.status !== undefined) {
-				updateData.status = data.status;
-			}
+      if (!id || Array.isArray(id))
+        return response.notFound(res, "User is not found");
 
-			if (data.spaceId !== undefined) {
-				updateData.space = {
-					connect: {
-						id: data.spaceId,
-					},
-				};
-			}
+      const data = updateFacilitySchema.parse(req.body);
 
-			const result = await prisma.facility.update({
-				where: {
-					id,
-				},
-				data: updateData,
-			});
+      const updateData: Prisma.FacilityUpdateInput = {};
 
-			io.emit("facilityUpdated", result);
-			response.success(res, result, "Success update facility");
-		} catch (error) {
-			const err = error as Error;
-			response.error(res, err, "Failed");
-		}
-	},
+      if (data.name !== undefined) {
+        updateData.name = data.name;
+      }
 
-	async delete(req: IReqUser, res: Response) {
-		try {
-			const io = req.app.get("io");
-			const { id } = req.params;
+      if (data.type !== undefined) {
+        updateData.type = data.type;
+      }
 
-			if (!id || Array.isArray(id))
-				return response.notFound(res, "Invalid ID");
+      if (data.status !== undefined) {
+        updateData.status = data.status;
+      }
 
-			const result = await prisma.facility.delete({
-				where: {
-					id,
-				},
-			});
+      if (data.value !== undefined) {
+        updateData.value = data.value;
+      }
 
-			io.emit("facilityDeleted", {
-				id: result.id,
-			});
+      if (data.deviceId !== undefined) {
+        updateData.device = {
+          connect: {
+            id: data.deviceId,
+          },
+        };
+      }
 
-			response.success(res, result, "Success delete facility");
-		} catch (error) {
-			const err = error as Error;
-			response.error(res, err, "Failed");
-		}
-	},
+      updateData.updater = {
+        connect: {
+          id: req.user!.id,
+        },
+      };
+
+      const result = await prisma.facility.update({
+        where: {
+          id,
+        },
+        data: updateData,
+        include: {
+          device: {
+            select: {
+              id: true,
+              name: true,
+              serialNumber: true,
+              space: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      io.emit("facilityUpdated", result);
+
+      response.success(res, result, "Success update facility");
+    } catch (error) {
+      const err = error as Error;
+      response.error(res, err, "Failed to update facility");
+    }
+  },
+
+  async delete(req: IReqUser, res: Response) {
+    try {
+      const io = req.app.get("io");
+      const { id } = req.params;
+
+      if (!id || Array.isArray(id))
+        return response.notFound(res, "User is not found");
+
+      const result = await prisma.facility.delete({
+        where: {
+          id,
+        },
+      });
+
+      io.emit("facilityDeleted", {
+        id: result.id,
+      });
+
+      response.success(res, result, "Success delete facility");
+    } catch (error) {
+      const err = error as Error;
+      response.error(res, err, "Failed to delete facility");
+    }
+  },
 };
