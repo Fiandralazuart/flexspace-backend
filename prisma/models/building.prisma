@@ -22,29 +22,57 @@ enum SpaceStatus {
   NON_SCHEDULED_USE
 }
 
-model Space {
-  id          String      @id @default(cuid())
-  buildingId  String
-  building    Building    @relation(fields: [buildingId], references: [id])
-  name        String
-  description String
-  floor       Int?
-  capacity    Int
-  code        String?     @unique
-  picture     String
-  pictureId   String
-  status      SpaceStatus @default(AVAILABLE)
-	isPublished Boolean  @default(false)
+enum OccupancyStatus {
+  EMPTY
+  OCCUPIED
+}
 
-  assets   Assets[]
-  facility Facility[]
+model OccupancyLog {
+  id String @id @default(cuid())
+  spaceId String
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  personCount Int
+  occupancyStatus OccupancyStatus
+  detectedAt DateTime @default(now())
+
+  @@index([spaceId])
+  @@index([detectedAt])
+
+  @@map("occupancy_logs")
+}
+
+model Space {
+  id            String      @id @default(cuid())
+  buildingId    String
+  building      Building    @relation(fields: [buildingId], references: [id])
+
+  name          String
+  description   String
+  floor         Int?
+  capacity      Int
+  code          String?     @unique
+  picture       String
+  pictureId     String
+  status        SpaceStatus @default(AVAILABLE)
+  isPublished   Boolean     @default(false)
+
+  // Realtime Occupancy
+  personCount      Int               @default(0)
+  occupancyStatus  OccupancyStatus   @default(EMPTY)
+  lastDetectedAt   DateTime?
+
+  assets        Assets[]
+  facility      Facility[]
+  occupancyLogs OccupancyLog[]
 
   createdBy String
   updatedBy String?
 
+  creator User  @relation("SpaceCreatedBy", fields: [createdBy], references: [id])
+  updater User? @relation("SpaceUpdatedBy", fields: [updatedBy], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  creator User  @relation("SpaceCreatedBy", fields: [createdBy], references: [id])
-  updater User? @relation("SpaceUpdatedBy", fields: [updatedBy], references: [id])
+  @@map("spaces")
 }

@@ -4,6 +4,7 @@ dotenv.config()
 
 export const JWT_SECRET: string = process.env.JWT_SECRET || ""
 export const DATABASE_URL: string = process.env.DATABASE_URL || "" 
+export const OCCUPANCY_API_KEY: string = process.env.OCCUPANCY_API_KEY || "" 
 
 
 export const EMAIL_SMTP_SECURE: boolean = Boolean(process.env.EMAIL_SMTP_SECURE) || false;
