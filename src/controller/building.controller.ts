@@ -6,6 +6,7 @@ import {
   BuildingSchema,
   CreateBuildingDTO,
   UpdateBuildingDTO,
+  updateBuildingSchema,
 } from "../validations/building.validation";
 
 const prisma = new PrismaClient();
@@ -128,7 +129,7 @@ export default {
   async update(req: IReqUser, res: Response) {
     try {
       const { id } = req.params;
-      const data: UpdateBuildingDTO = BuildingSchema.parse(req.body);
+      const data: UpdateBuildingDTO = updateBuildingSchema.parse(req.body);
       const io = req.app.get("io");
 
       if (!id || Array.isArray(id))
@@ -142,6 +143,10 @@ export default {
 
       if (data.location !== undefined) {
         updateData.location = data.location;
+      }
+
+      if (data.isPublished !== undefined) {
+        updateData.isPublished = data.isPublished;
       }
 
       updateData.updater = {
