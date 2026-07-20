@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 export default {
 	async create(req: IReqUser, res: Response) {
 		try {
-			const io = req.app.get("io")
+			const io = req.app.get("io");
 			const data = createSpaceSchema.parse(req.body);
 
 			const result = await prisma.space.create({
@@ -41,7 +41,7 @@ export default {
 				},
 			});
 
-			io.emit("spaceCreated", result)
+			io.emit("spaceCreated", result);
 			response.success(res, result, "Success create space");
 		} catch (error) {
 			const err = error as Error;
@@ -50,27 +50,75 @@ export default {
 	},
 	async findAll(req: IReqUser, res: Response) {
 		try {
-			const result = await prisma.space.findMany({
-				include: {
-					creator: {
-						select: {
-							name: true,
-							email: true,
+			const page = Number(req.query.page ?? 1);
+			const limit = Number(req.query.limit ?? 10);
+			const search = String(req.query.search ?? "");
+
+			const skip = (page - 1) * limit;
+
+			const where: Prisma.SpaceWhereInput = {};
+
+			if (search) {
+				where.OR = [
+					{
+						name: {
+							contains: search,
+							mode: "insensitive",
 						},
 					},
-					building: {
-						select: {
-							id: true,
-							name: true,
-						}
+					{
+						building: {
+							name: {
+								contains: search,
+								mode: "insensitive",
+							},
+						},
+					},
+				];
+			}
+
+			const [data, totalData] = await Promise.all([
+				prisma.space.findMany({
+					where,
+					skip,
+					take: limit,
+					orderBy: {
+						createdAt: "desc",
+					},
+					include: {
+						creator: {
+							select: {
+								name: true,
+								email: true,
+							},
+						},
+						building: {
+							select: {
+								id: true,
+								name: true,
+							},
+						},
+					},
+				}),
+
+				prisma.space.count({
+					where,
+				}),
+			]);
+
+			response.success(
+				res,
+				{
+					data,
+					meta: {
+						page,
+						limit,
+						totalData,
+						totalPage: Math.ceil(totalData / limit),
 					}
 				},
-			});
-
-			if (result.length == 0)
-				return response.notFound(res, "Database are empty");
-
-			response.success(res, result, "Success find all data");
+				"Success find all data",
+			);
 		} catch (error) {
 			const err = error as Error;
 			response.error(res, err, "Failed");
@@ -80,7 +128,8 @@ export default {
 		try {
 			const { id } = req.params;
 
-			if (!id || Array.isArray(id)) return response.notFound(res, "Invalid ID");
+			if (!id || Array.isArray(id))
+				return response.notFound(res, "Invalid ID");
 
 			const result = await prisma.space.findUnique({
 				where: {
@@ -97,8 +146,8 @@ export default {
 						select: {
 							id: true,
 							name: true,
-						}
-					}
+						},
+					},
 				},
 			});
 
@@ -110,11 +159,12 @@ export default {
 	},
 	async update(req: IReqUser, res: Response) {
 		try {
-			const io = req.app.get("io")
+			const io = req.app.get("io");
 			const { id } = req.params;
 			const data = updateSpaceSchema.parse(req.body);
 
-			if (!id || Array.isArray(id)) return response.notFound(res, "Invalid ID");
+			if (!id || Array.isArray(id))
+				return response.notFound(res, "Invalid ID");
 
 			const updateData: Prisma.SpaceUpdateInput = {};
 
@@ -167,7 +217,7 @@ export default {
 				data: updateData,
 			});
 
-			io.emit("spaceUpdated", result)
+			io.emit("spaceUpdated", result);
 			response.success(res, result, "Success update space");
 		} catch (error) {
 			const err = error as Error;
@@ -176,10 +226,11 @@ export default {
 	},
 	async delete(req: IReqUser, res: Response) {
 		try {
-			const io = req.app.get("io")
+			const io = req.app.get("io");
 			const { id } = req.params;
 
-			if (!id || Array.isArray(id)) return response.notFound(res, "Invalid ID");
+			if (!id || Array.isArray(id))
+				return response.notFound(res, "Invalid ID");
 
 			const result = await prisma.space.delete({
 				where: {
@@ -188,8 +239,8 @@ export default {
 			});
 
 			io.emit("spaceDeleted", {
-				id: result.id
-			})
+				id: result.id,
+			});
 			response.success(res, result, "Success delete space");
 		} catch (error) {
 			const err = error as Error;
