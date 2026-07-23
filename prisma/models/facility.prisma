@@ -26,12 +26,12 @@ model Assets {
 }
 
 model Facility {
-  id       String @id @default(cuid())
-  name     String
-  type     FacilityType
-  channel  Int
-  status   FacilityStatus @default(OFF)
-  value    Int?
+  id      String         @id @default(cuid())
+  name    String
+  type    FacilityType
+  channel Int
+  status  FacilityStatus @default(OFF)
+  value   Int?
 
   deviceId String
   device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
@@ -59,12 +59,12 @@ enum FacilityStatus {
 }
 
 model Device {
-  id           String @id @default(cuid())
+  id           String       @id @default(cuid())
   name         String
-  serialNumber String @unique
+  serialNumber String       @unique
   status       DeviceStatus @default(OFFLINE)
-  spaceId      String @unique
-  space        Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceId      String       @unique
+  space        Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   facilities   Facility[]
 
   createdBy String

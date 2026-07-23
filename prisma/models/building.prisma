@@ -1,9 +1,9 @@
 model Building {
-  id        String   @id @default(cuid())
-  name      String
-  location  Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  location    Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   isPublished Boolean  @default(false)
 
   createdBy String
@@ -16,10 +16,9 @@ model Building {
 }
 
 enum SpaceStatus {
-  AVAILABLE
-  IN_USE
-  POTENTIAL_AVAILABLE
-  NON_SCHEDULED_USE
+  ACTIVE
+  MAINTENANCE
+  INACTIVE
 }
 
 enum OccupancyStatus {
@@ -28,42 +27,43 @@ enum OccupancyStatus {
 }
 
 model OccupancyLog {
-  id String @id @default(cuid())
-  spaceId String
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  personCount Int
+  id              String          @id @default(cuid())
+  spaceId         String
+  space           Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  personCount     Int
   occupancyStatus OccupancyStatus
-  detectedAt DateTime @default(now())
+  detectedAt      DateTime        @default(now())
 
   @@index([spaceId])
   @@index([detectedAt])
-
   @@map("occupancy_logs")
 }
 
 model Space {
-  id            String      @id @default(cuid())
-  buildingId    String
-  building      Building    @relation(fields: [buildingId], references: [id])
+  id String @id @default(cuid())
 
-  name          String
-  description   String
-  floor         Int?
-  capacity      Int
-  code          String?     @unique
-  picture       String
-  pictureId     String
-  status        SpaceStatus @default(AVAILABLE)
-  isPublished   Boolean     @default(false)
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id])
 
-  // Realtime Occupancy
-  personCount      Int               @default(0)
-  occupancyStatus  OccupancyStatus   @default(EMPTY)
-  lastDetectedAt   DateTime?
+  name        String
+  description String
+  floor       Int?
+  capacity    Int
+  code        String? @unique
+
+  picture   String
+  pictureId String
+
+  status      SpaceStatus @default(ACTIVE)
+  isPublished Boolean     @default(false)
+
+  personCount     Int             @default(0)
+  occupancyStatus OccupancyStatus @default(EMPTY)
+  lastDetectedAt  DateTime?
 
   assets        Assets[]
   occupancyLogs OccupancyLog[]
-  devices Device?
+  devices       Device?
 
   createdBy String
   updatedBy String?

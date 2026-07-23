@@ -21,6 +21,7 @@ export default {
 				data: {
 					name: data.name,
 					location: data.location,
+					isPublished: data.isPublished,
 					creator: {
 						connect: {
 							id: req.user!.id,
@@ -101,8 +102,9 @@ export default {
 		try {
 			const { id } = req.params;
 
-			if (!id || Array.isArray(id))
+			if (!id || Array.isArray(id)) {
 				return response.notFound(res, "User is not found");
+			}
 
 			const result = await prisma.building.findUnique({
 				where: {
@@ -118,9 +120,11 @@ export default {
 				},
 			});
 
-			if (!result) return response.notFound(res, "Data Not Found");
+			if (!result) {
+				return response.notFound(res, "Building not found");
+			}
 
-			response.success(res, result, "Success Get one Data");
+			return response.success(res, result, "Success Get One Building");
 		} catch (error) {
 			const err = error as Error;
 			response.error(res, err, "Failed to find one building");
@@ -197,7 +201,9 @@ export default {
 				},
 			});
 
-			io.emit("buildingDeleted", result);
+			io.emit("buildingDeleted", {
+				id: result.id,
+			});
 			response.success(res, result, "Success Delete User");
 		} catch (error) {
 			const err = error as Error;

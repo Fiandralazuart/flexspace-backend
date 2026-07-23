@@ -76,7 +76,6 @@ export default {
 					},
 				];
 			}
-
 			const [data, totalData] = await Promise.all([
 				prisma.space.findMany({
 					where,
@@ -98,6 +97,14 @@ export default {
 								name: true,
 							},
 						},
+						devices: {
+							select: {
+								id: true,
+								name: true,
+								status: true,
+								serialNumber: true,
+							},
+						},
 					},
 				}),
 
@@ -115,7 +122,7 @@ export default {
 						limit,
 						totalData,
 						totalPage: Math.ceil(totalData / limit),
-					}
+					},
 				},
 				"Success find all data",
 			);
@@ -128,8 +135,8 @@ export default {
 		try {
 			const { id } = req.params;
 
-			if (!id || Array.isArray(id))
-				return response.notFound(res, "Invalid ID");
+			if (!id || Array.isArray(id)) return response.notFound(res, "Invalid ID");
+			console.log("ID:", id);
 
 			const result = await prisma.space.findUnique({
 				where: {
@@ -148,6 +155,14 @@ export default {
 							name: true,
 						},
 					},
+					devices: {
+						select: {
+							id: true,
+							name: true,
+							status: true,
+							serialNumber: true,
+						},
+					},
 				},
 			});
 
@@ -163,8 +178,7 @@ export default {
 			const { id } = req.params;
 			const data = updateSpaceSchema.parse(req.body);
 
-			if (!id || Array.isArray(id))
-				return response.notFound(res, "Invalid ID");
+			if (!id || Array.isArray(id)) return response.notFound(res, "Invalid ID");
 
 			const updateData: Prisma.SpaceUpdateInput = {};
 
@@ -194,6 +208,10 @@ export default {
 
 			if (data.status !== undefined) {
 				updateData.status = data.status;
+			}
+
+			if (data.isPublished !== undefined) {
+				updateData.isPublished = data.isPublished;
 			}
 
 			if (data.buildingId !== undefined) {
@@ -229,8 +247,7 @@ export default {
 			const io = req.app.get("io");
 			const { id } = req.params;
 
-			if (!id || Array.isArray(id))
-				return response.notFound(res, "Invalid ID");
+			if (!id || Array.isArray(id)) return response.notFound(res, "Invalid ID");
 
 			const result = await prisma.space.delete({
 				where: {
