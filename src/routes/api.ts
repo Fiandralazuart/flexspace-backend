@@ -12,6 +12,7 @@ import occupancyController from "../controller/occupancy.controller";
 import iotMiddleware from "../middleware/occupancy.middleware";
 import deviceController from "../controller/device.controller";
 import occupancyAnaliticController from "../controller/analitics/occupancyAnalitic.controller";
+import iotController from "../controller/iot.controller";
 
 const router = express.Router();
 
@@ -112,5 +113,17 @@ router.get("/analytics/occupancy/peak-hour", occupancyAnaliticController.peakHou
 router.get("/analytics/occupancy/status", occupancyAnaliticController.status);
 router.get("/analytics/occupancy/utilization", occupancyAnaliticController.utilization);
 router.get("/analytics/occupancy/top-spaces", occupancyAnaliticController.topSpaces);
+
+
+router.put(
+	"/control/:id",
+	authMiddleware,
+	iotController.control,
+);
+router.get(
+	"/devices/online",
+	authMiddleware,
+	iotController.getOnlineDevices,
+);
 
 export default router;

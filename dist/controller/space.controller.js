@@ -125,7 +125,6 @@ exports.default = {
             const { id } = req.params;
             if (!id || Array.isArray(id))
                 return response_1.default.notFound(res, "Invalid ID");
-            console.log("ID:", id);
             const result = await prisma.space.findUnique({
                 where: {
                     id,
