@@ -9,6 +9,7 @@ const villages = villagesData as unknown as Prisma.VillageCreateManyInput[];
 const prisma = new PrismaClient();
 
 async function main() {
+	console.log("Seed started");
 
 	await prisma.province.createMany({
 		data: provinces,
@@ -55,6 +56,11 @@ async function main() {
 		],
 		skipDuplicates: true,
 	});
+
+	console.log("Role inserted");
+
+	const count = await prisma.role.count();
+	console.log("Role count:", count);
 
 	const superAdmin = await prisma.role.findUnique({
 		where: {

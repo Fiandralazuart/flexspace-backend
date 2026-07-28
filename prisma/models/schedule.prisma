@@ -1,0 +1,42 @@
+
+enum ScheduleType {
+  EVENT
+  MAINTENANCE
+  HOLIDAY
+  BLOCKED
+}
+
+enum ScheduleStatus {
+  ACTIVE
+  CANCELLED
+}
+
+model Schedule {
+  id String @id @default(cuid())
+
+  spaceId String @map("space_id")
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  type ScheduleType @default(EVENT)
+  status ScheduleStatus @default(ACTIVE)
+
+  title String
+  description String?
+
+  startTime DateTime @map("start_time")
+  endTime DateTime @map("end_time")
+
+  createdBy String @map("created_by")
+  creator User @relation("ScheduleCreator", fields: [createdBy], references: [id])
+
+  updatedBy String? @map("updated_by")
+  updater User? @relation("ScheduleUpdater", fields: [updatedBy], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([spaceId])
+  @@index([startTime, endTime])
+
+  @@map("schedules")
+}

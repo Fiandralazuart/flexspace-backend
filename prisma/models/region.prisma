@@ -1,40 +1,36 @@
 model Province {
-  id   String @id
-  name String
-
+  id        String    @id
+  name      String
   regencies Regency[]
 
   @@map("provinces")
 }
 
 model Regency {
-  id         String @id
+  id         String     @id
   provinceId String
   name       String
-
-  province  Province   @relation(fields: [provinceId], references: [id])
-  districts District[]
+  districts  District[]
+  province   Province   @relation(fields: [provinceId], references: [id])
 
   @@map("regencies")
 }
 
 model District {
-  id        String @id
+  id        String    @id
   regencyId String
   name      String
-
-  regency  Regency   @relation(fields: [regencyId], references: [id])
-  villages Village[]
+  regency   Regency   @relation(fields: [regencyId], references: [id])
+  villages  Village[]
 
   @@map("districts")
 }
 
 model Village {
-  id         String @id
+  id         String   @id
   districtId String
   name       String
-
-  district District @relation(fields: [districtId], references: [id])
+  district   District @relation(fields: [districtId], references: [id])
 
   @@map("villages")
 }

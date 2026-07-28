@@ -13,6 +13,7 @@ import iotMiddleware from "../middleware/occupancy.middleware";
 import deviceController from "../controller/device.controller";
 import occupancyAnaliticController from "../controller/analitics/occupancyAnalitic.controller";
 import iotController from "../controller/iot.controller";
+import scheduleController from "../controller/schedule.controller";
 
 const router = express.Router();
 
@@ -64,6 +65,17 @@ router
 	.route("/region/villages/:districtId")
 	.get(authMiddleware, regionController.getVillages);
 router.route("/region/city").get(authMiddleware, regionController.findByCity);
+
+router
+	.route("/schedule")
+	.get(authMiddleware, scheduleController.findAll)
+	.post(authMiddleware, scheduleController.create);
+
+router
+	.route("/schedule/:id")
+	.get(authMiddleware, scheduleController.findOne)
+	.put(authMiddleware, scheduleController.update)
+	.delete(authMiddleware, scheduleController.delete);
 
 router
 	.route("/facility")

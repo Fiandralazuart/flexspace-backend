@@ -4,47 +4,42 @@ model role {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  users User[]
+  users       User[]
 
   @@map("roles")
 }
 
 model User {
-  id            String    @id @default(cuid())
-  roleId        Int
-  role          role      @relation(fields: [roleId], references: [id])
-  name          String
-  email         String    @unique
-  password      String
-  phone         String?   @unique
-  photo         String?
-  isActive      Boolean   @default(true)
-  emailVerified Boolean   @default(false)
-  lastLoginAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  createdBy String?
-  updatedBy String?
-
-  creator User? @relation("UserCreatedBy", fields: [createdBy], references: [id])
-  updater User? @relation("UserUpdatedBy", fields: [updatedBy], references: [id])
-
-  createdUsers User[] @relation("UserCreatedBy")
-  updatedUsers User[] @relation("UserUpdatedBy")
-
-  createdBuildings Building[] @relation("BuildingCreatedBy")
-  updatedBuildings Building[] @relation("BuildingUpdatedBy")
-
-  createdSpaces Space[] @relation("SpaceCreatedBy")
-  updatedSpaces Space[] @relation("SpaceUpdatedBy")
-
-  devicesCreated Device[] @relation("DeviceCreatedBy")
-  devicesUpdated Device[] @relation("DeviceUpdatedBy")
-
+  id                String     @id @default(cuid())
+  roleId            Int
+  name              String
+  email             String     @unique
+  password          String
+  phone             String?    @unique
+  photo             String?
+  isActive          Boolean    @default(true)
+  emailVerified     Boolean    @default(false)
+  lastLoginAt       DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  createdBuildings  Building[] @relation("BuildingCreatedBy")
+  updatedBuildings  Building[] @relation("BuildingUpdatedBy")
+  devicesCreated    Device[]   @relation("DeviceCreatedBy")
+  devicesUpdated    Device[]   @relation("DeviceUpdatedBy")
   facilitiesCreated Facility[] @relation("FacilityCreatedBy")
   facilitiesUpdated Facility[] @relation("FacilityUpdatedBy")
+  createdSpaces     Space[]    @relation("SpaceCreatedBy")
+  updatedSpaces     Space[]    @relation("SpaceUpdatedBy")
+  creator           User?      @relation("UserCreatedBy", fields: [createdBy], references: [id])
+  createdUsers      User[]     @relation("UserCreatedBy")
+  role              role       @relation(fields: [roleId], references: [id])
+  updater           User?      @relation("UserUpdatedBy", fields: [updatedBy], references: [id])
+  updatedUsers      User[]     @relation("UserUpdatedBy")
+
+    schedulesCreated Schedule[] @relation("ScheduleCreator")
+schedulesUpdated Schedule[] @relation("ScheduleUpdater")
 
   @@index([roleId])
   @@map("users")

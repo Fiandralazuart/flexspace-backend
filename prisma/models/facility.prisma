@@ -3,16 +3,13 @@ model AssetCategory {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  assets Assets[]
+  assets    Assets[]
 }
 
 model Assets {
   id          String        @id @default(cuid())
   spaceId     String
-  space       Space         @relation(fields: [spaceId], references: [id])
   categoryId  Int
-  category    AssetCategory @relation(fields: [categoryId], references: [id])
   name        String
   description String
   floor       Int
@@ -20,32 +17,47 @@ model Assets {
   picture     String
   pictureId   Int
   status      String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  category    AssetCategory @relation(fields: [categoryId], references: [id])
+  space       Space         @relation(fields: [spaceId], references: [id])
 }
 
 model Facility {
-  id      String         @id @default(cuid())
-  name    String
-  type    FacilityType
-  channel Int
-  status  FacilityStatus @default(OFF)
-  value   Int?
-
-  deviceId String
-  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-
+  id        String         @id @default(cuid())
+  name      String
+  type      FacilityType
+  status    FacilityStatus @default(OFF)
+  value     Int?
+  deviceId  String
   createdBy String
   updatedBy String?
-
-  creator User  @relation("FacilityCreatedBy", fields: [createdBy], references: [id])
-  updater User? @relation("FacilityUpdatedBy", fields: [updatedBy], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  channel   Int
+  creator   User           @relation("FacilityCreatedBy", fields: [createdBy], references: [id])
+  device    Device         @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  updater   User?          @relation("FacilityUpdatedBy", fields: [updatedBy], references: [id])
 
   @@map("facilities")
+}
+
+model Device {
+  id           String       @id @default(cuid())
+  name         String
+  serialNumber String       @unique
+  status       DeviceStatus @default(OFFLINE)
+  spaceId      String       @unique
+  createdBy    String
+  updatedBy    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  creator      User         @relation("DeviceCreatedBy", fields: [createdBy], references: [id])
+  space        Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  updater      User?        @relation("DeviceUpdatedBy", fields: [updatedBy], references: [id])
+  facilities   Facility[]
+
+  @@map("devices")
 }
 
 enum FacilityType {
@@ -56,27 +68,6 @@ enum FacilityType {
 enum FacilityStatus {
   ON
   OFF
-}
-
-model Device {
-  id           String       @id @default(cuid())
-  name         String
-  serialNumber String       @unique
-  status       DeviceStatus @default(OFFLINE)
-  spaceId      String       @unique
-  space        Space        @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  facilities   Facility[]
-
-  createdBy String
-  updatedBy String?
-
-  creator User  @relation("DeviceCreatedBy", fields: [createdBy], references: [id])
-  updater User? @relation("DeviceUpdatedBy", fields: [updatedBy], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("devices")
 }
 
 enum DeviceStatus {
