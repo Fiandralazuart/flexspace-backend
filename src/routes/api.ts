@@ -14,6 +14,7 @@ import deviceController from "../controller/device.controller";
 import occupancyAnaliticController from "../controller/analitics/occupancyAnalitic.controller";
 import iotController from "../controller/iot.controller";
 import scheduleController from "../controller/schedule.controller";
+import bookingController from "../controller/booking.controller";
 
 const router = express.Router();
 
@@ -51,6 +52,19 @@ router
 	.get(authMiddleware, spaceController.findOne)
 	.put(authMiddleware, spaceController.update)
 	.delete(authMiddleware, spaceController.delete);
+
+router
+	.route("/booking")
+	.get(authMiddleware, bookingController.findAll)
+	.post(authMiddleware, bookingController.create);
+router
+	.route("/booking/me")
+	.get(authMiddleware, bookingController.findMe);
+router
+	.route("/booking/:id")
+	.get(authMiddleware, bookingController.findOne)
+	.put(authMiddleware, bookingController.update)
+	.delete(authMiddleware, bookingController.delete);
 
 router
 	.route("/region/provinces")

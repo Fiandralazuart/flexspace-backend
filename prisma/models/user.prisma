@@ -37,9 +37,10 @@ model User {
   role              role       @relation(fields: [roleId], references: [id])
   updater           User?      @relation("UserUpdatedBy", fields: [updatedBy], references: [id])
   updatedUsers      User[]     @relation("UserUpdatedBy")
-
+	bookings Booking[]
     schedulesCreated Schedule[] @relation("ScheduleCreator")
 schedulesUpdated Schedule[] @relation("ScheduleUpdater")
+reviewedBookings Booking[] @relation("BookingReviewer")
 
   @@index([roleId])
   @@map("users")

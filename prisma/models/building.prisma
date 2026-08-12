@@ -46,6 +46,7 @@ model Space {
   updatedAt       DateTime        @updatedAt
   assets          Assets[]
   schedules Schedule[]
+  bookings Booking[]
   devices         Device?
   occupancyLogs   OccupancyLog[]
   building        Building        @relation(fields: [buildingId], references: [id])
