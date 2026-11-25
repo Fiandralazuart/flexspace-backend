@@ -20,7 +20,6 @@ export default {
 	},
 
 	error(res: Response, error: unknown, message: string) {
-
 		// Validation Error (Zod)
 		if (error instanceof ZodError) {
 			return res.status(400).json({
